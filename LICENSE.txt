@@ -1,0 +1,27 @@
+Commercial License Agreement
+
+Copyright (c) 2025 PocketStarter
+
+This software and associated documentation files (the "Software") are licensed, not sold, to you by PocketStarter for use under the following terms:
+
+PERMITTED USES:
+✓ Use the Software to build and deploy unlimited commercial applications under your own name
+✓ Modify the Software for your own projects
+✓ Deploy applications built with this Software for profit
+
+PROHIBITED USES:
+✗ Redistribute, resell, or sublicense the Software
+✗ Share the source code with third parties
+✗ Use the Software to create competing templates or boilerplates
+✗ Remove or modify this license notice
+
+LIMITATIONS:
+- The Software is provided "AS IS" without warranty
+- You may purchase additional licenses for team members
+- This license is non-transferable
+- Violation terminates your rights immediately
+
+The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
+In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
+
+For questions, please contact us at pocketstarter.dev.
