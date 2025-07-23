@@ -39,7 +39,13 @@ A boilerplate built with Next.js and PocketBase.
    pnpm install
    ```
 
-3. Start the development server:
+3. Copy the `.env.local.example` file to `.env.local`:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+   Then, open `.env.local` and set the required environment variables with the correct values for your setup.
+
+4. Start the development server:
    ```bash
    pnpm dev
    ```
