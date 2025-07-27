@@ -6,8 +6,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata = createMetadata({
-  title: 'Streamline Your Content Management',
-  description: 'A modern web application that helps you manage and organize your content efficiently. Get started today and experience the power of streamlined productivity.',
+  title: 'PocketStarter: A Pocketbase / Next.js template',
+  description: 'A Pocketbase / Next.js template for building your own SaaS product.',
 })
 
 export default function Home() {

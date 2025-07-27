@@ -2,11 +2,18 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
+import { Menu, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useTheme } from '@/contexts/ThemeContext'
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface PublicNavigationProps {
   isAuthPage?: boolean
@@ -14,6 +21,7 @@ interface PublicNavigationProps {
 
 export default function PublicNavigation({ isAuthPage = false }: PublicNavigationProps) {
   const { theme } = useTheme()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -57,6 +65,54 @@ export default function PublicNavigation({ isAuthPage = false }: PublicNavigatio
 
           <div className="flex items-center space-x-4">
             <ThemeToggle />
+            
+            {/* Mobile menu button */}
+            <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <DropdownMenuTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="sm" className="p-3">
+                  {isMobileMenuOpen ? (
+                    <X className="h-6 w-6" />
+                  ) : (
+                    <Menu className="h-6 w-6" />
+                  )}
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-56 mt-2 md:hidden"
+                sideOffset={8}
+              >
+                <DropdownMenuItem asChild>
+                  <Link 
+                    href="/" 
+                    className="w-full py-3"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link 
+                    href="/pricing" 
+                    className="w-full py-3"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Pricing
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link 
+                    href="/contact" 
+                    className="w-full py-3"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <Button variant="secondary" asChild>
               <Link href="/auth/login">
                 Sign In

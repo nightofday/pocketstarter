@@ -1,15 +1,15 @@
 /**
  * Route constants for authentication and sitemap configuration
- * TypeScript types are provided in routes.d.ts
  */
 
-/** Routes that don't need authentication */
+/* Routes that don't need authentication */
 export const PUBLIC_ROUTES = [
   '/auth',
   '/pricing',
+  '/contact',
 ]
 
-/** Routes that need authentication */
+/* Routes that need authentication */
 export const PROTECTED_ROUTES = [
   '/dashboard',
   '/dashboard/*',
@@ -17,7 +17,7 @@ export const PROTECTED_ROUTES = [
   '/account/*',
 ]
 
-/** Routes to exclude from sitemap */
+/* Routes to exclude from sitemap */
 export const SITEMAP_EXCLUSIONS = [
   ...PROTECTED_ROUTES,
   '/api/*',

@@ -207,6 +207,8 @@ routerAdd("POST", "/api/stripe/portal", (c) => {
     
     // Helper function to create Stripe portal session
     function createPortalSession(customerId) {
+        const baseUrl = $app.settings().meta.appURL;
+        
         const response = $http.send({
             url: "https://api.stripe.com/v1/billing_portal/sessions",
             method: "POST",
@@ -214,7 +216,7 @@ routerAdd("POST", "/api/stripe/portal", (c) => {
                 "Authorization": `Bearer ${process.env.STRIPE_SECRET_KEY}`,
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: `customer=${customerId}&return_url=${process.env.SITE_URL}/dashboard`
+            body: `customer=${customerId}&return_url=${baseUrl}/dashboard`
         });
         
         if (response.statusCode !== 200) {
@@ -272,7 +274,7 @@ routerAdd("POST", "/api/stripe/checkout", (c) => {
     // Helper function to build checkout session body
     function buildCheckoutBody(params, userRecord) {
         const { mode, priceId, trialDays } = params;
-        const baseUrl = process.env.SITE_URL;
+        const baseUrl = $app.settings().meta.appURL;
         
         let body = `mode=${encodeURIComponent(mode)}`;
         body += `&payment_method_types[]=card`;
