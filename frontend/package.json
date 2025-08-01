@@ -9,6 +9,7 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
     "generate-types": "pocketbase-typegen --db ../pocketbase/pb_data/data.db --out ./src/types/pocketbase-types.ts"
   },
   "dependencies": {
