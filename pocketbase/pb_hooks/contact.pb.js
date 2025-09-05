@@ -28,6 +28,9 @@ routerAdd("POST", "/api/contact", (c) => {
             to: [{ 
                 address: $app.settings().meta.senderAddress // Send to admin email
             }],
+            headers: {
+                "Reply-To": data.email // Set Reply-To header to the user's email
+            },
             subject: `New Contact Form Submission from ${data.name}`,
             html: `
                 <h2>New Contact Form Submission</h2>
