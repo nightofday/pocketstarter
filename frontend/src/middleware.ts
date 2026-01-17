@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
     // For style-src, allow unsafe-inline for now as popular libraries like next/image and shadcn components require inline styles
     // For better security, consider avoiding those components and set style-src to "'self'", `'nonce-${nonce}'"
     'style-src': ["'self'", "'unsafe-inline'"],
-    'img-src': ["'self'", 'blob:', 'data:', 'https:', 'https://*.stripe.com', 'https://*.google-analytics.com', 'https://*.googletagmanager.com'],
+    'img-src': ["'self'", 'blob:', 'data:', 'https:', pocketbaseUrl, 'https://*.stripe.com', 'https://*.google-analytics.com', 'https://*.googletagmanager.com'],
     'font-src': ["'self'"],
     'object-src': ["'none'"],
     'base-uri': ["'self'"],
