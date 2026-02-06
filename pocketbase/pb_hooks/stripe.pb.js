@@ -30,71 +30,39 @@ routerAdd("POST", "/api/stripe/webhook", (c) => {
     function findSubscriptionByStripeId(subscriptionId) {
         return $app.findRecordsByFilter(
             'subscriptions',
-            `stripe_subscription_id = "${subscriptionId}"`,
-            null,
-            1
-        )[0] || null;
-    }
-    
-    // Helper function to find user by email
-    function findUserByEmail(email) {
-        return $app.findRecordsByFilter(
-            'users',
-            `email = "${email}"`,
+            `stripe_subscription_id="${subscriptionId}"`,
             null,
             1
         )[0] || null;
     }
     
     // Helper function to create or update subscription record
-    function createOrUpdateSubscriptionRecord(userId, customerId, subscriptionId, status) {
-        let record = findSubscriptionByStripeId(subscriptionId) || 
-            $app.findRecordsByFilter('subscriptions', `user.id = "${userId}"`, null, 1)[0];
+    function createOrUpdateSubscriptionRecord(subscriptionId, status, userId = null, customerId = null) {
+        let record = findSubscriptionByStripeId(subscriptionId);
+        
+        // If not found by subscriptionId and we have userId, try finding by userId
+        if (!record && userId) {
+            record = $app.findRecordsByFilter('subscriptions', `user.id = "${userId}"`, null, 1)[0];
+        }
         
         if (record) {
-            record.set("stripe_customer_id", customerId);
-            record.set("stripe_subscription_id", subscriptionId);
-            record.set("subscription_status", status);
-        } else {
+            // Update existing record
+            if (customerId) record.set("stripe_customer_id", customerId);
+            if (subscriptionId) record.set("stripe_subscription_id", subscriptionId);
+            if (status) record.set("subscription_status", status);
+            $app.save(record);
+        } else if (userId) {
+            // Create new record (only if we have userId)
             record = new Record($app.findCollectionByNameOrId('subscriptions'), {
                 user: userId,
                 stripe_customer_id: customerId,
                 stripe_subscription_id: subscriptionId,
                 subscription_status: status
             });
+            $app.save(record);
         }
-        $app.save(record);
+        
         return record;
-    }
-    
-    // Helper function to get subscription details from Stripe
-    function getSubscriptionDetails(subscriptionId) {
-        const response = $http.send({
-            url: `${STRIPE_BASE_URL}/subscriptions/${subscriptionId}`,
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Stripe-Version': STRIPE_API_VERSION
-            }
-        });
-        
-        if (response.statusCode !== 200) {
-            throw new Error(`Failed to retrieve subscription: ${response.raw}`);
-        }
-        
-        return JSON.parse(response.raw);
-    }
-    
-    // Helper function to handle subscription updates
-    function handleSubscriptionUpdate(subscriptionId, customerId, userId, status) {
-        const subscription = subscriptionId ? getSubscriptionDetails(subscriptionId) : null;
-        createOrUpdateSubscriptionRecord(
-            userId,
-            customerId,
-            subscriptionId,
-            subscription?.status || status
-        );
     }
     
     // Main webhook processing logic
@@ -112,48 +80,65 @@ routerAdd("POST", "/api/stripe/webhook", (c) => {
         // Process different event types
         switch (event.type) {
             case 'checkout.session.completed': {
-                const session = event.data.object;
-                const user = findUserByEmail(session.customer_email);
-                
-                if (!user) {
-                    throw new Error(`No user found with email: ${session.customer_email}`);
-                }
-                
-                if (session.mode === "subscription" && session.subscription) {
-                    handleSubscriptionUpdate(session.subscription, session.customer, user.id);
-                } else if (session.mode === "payment") {
-                    handleSubscriptionUpdate(session.payment_intent, session.customer, user.id, "active");
-                }
+                (function() {
+                    const session = event.data.object;
+                    const userId = session.metadata ? session.metadata.userId : null;
+                    
+                    if (!userId) return;
+                    
+                    if (session.mode === "subscription" && session.subscription) {
+                        const subscriptionId = session.subscription;
+                        
+                        // Get subscription details from Stripe API
+                        const response = $http.send({
+                            url: `${STRIPE_BASE_URL}/subscriptions/${subscriptionId}`,
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Stripe-Version': STRIPE_API_VERSION
+                            }
+                        });
+                        
+                        if (response.statusCode !== 200) return;
+                        
+                        const subscription = JSON.parse(response.raw);
+                        const customerId = session.customer || null;
+                        
+                        createOrUpdateSubscriptionRecord(subscriptionId, subscription.status, userId, customerId);
+                    } else if (session.mode === "payment") {
+                        // For one-time payments, create a subscription record with active status
+                        const customerId = session.customer || null;
+                        const paymentIntentId = session.payment_intent || null;
+                        
+                        // Use payment_intent as a temporary subscription ID for one-time payments
+                        if (paymentIntentId) {
+                            createOrUpdateSubscriptionRecord(paymentIntentId, "active", userId, customerId);
+                        }
+                    }
+                })();
                 break;
             }
             
-            case 'invoice.payment_succeeded':
-            case 'invoice.payment_failed': {
-                const invoice = event.data.object;
-                if (!invoice.subscription) break;
-                
-                const record = findSubscriptionByStripeId(invoice.subscription);
-                if (!record) {
-                    console.error(`No subscription record found for: ${invoice.subscription}`);
-                    break;
-                }
-                
-                const status = event.type === 'invoice.payment_succeeded' ? null : 'past_due';
-                handleSubscriptionUpdate(invoice.subscription, null, record.get('user'), status);
+            case 'invoice.paid': {
+                (function() {
+                    const invoice = event.data.object;
+                    if (!invoice.subscription) return;
+                    createOrUpdateSubscriptionRecord(invoice.subscription, "active");
+                })();
                 break;
             }
             
             case 'customer.subscription.updated':
             case 'customer.subscription.deleted': {
-                const subscription = event.data.object;
-                const record = findSubscriptionByStripeId(subscription.id);
-                if (!record) {
-                    console.error(`No subscription record found for: ${subscription.id}`);
-                    break;
-                }
-                
-                const status = event.type === 'customer.subscription.deleted' ? "canceled" : null;
-                handleSubscriptionUpdate(subscription.id, subscription.customer, record.get('user'), status);
+                (function() {
+                    const subscription = event.data.object;
+                    
+                    try {
+                        const status = event.type === 'customer.subscription.deleted' ? "canceled" : subscription.status;
+                        createOrUpdateSubscriptionRecord(subscription.id, status);
+                    } catch {}
+                })();
                 break;
             }
         }

@@ -1,7 +1,7 @@
 import { pocketbase } from '@/lib/pocketbase'
 import { Collections } from '@/types/pocketbase-types'
 
-export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'none'
+export type SubscriptionStatus = 'active' | 'trialing' | 'canceled' | 'none'
 
 // Core Stripe API functions
 export async function createCheckoutSession({

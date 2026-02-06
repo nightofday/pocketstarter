@@ -30,7 +30,7 @@ if (typeof window !== 'undefined') {
       document.cookie = pocketbase.authStore.exportToCookie({
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'lax' // Using 'lax' instead of 'strict' to allow cookies on redirects from external sites (e.g., Stripe to update subscription status after payment)
       })
     } else {
       // User is not authenticated (signed out) - clear the cookie
