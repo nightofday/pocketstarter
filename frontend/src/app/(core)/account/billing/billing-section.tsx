@@ -1,22 +1,26 @@
 'use client'
 
+import { useState } from 'react'
 import { useAuth } from '@/stores/auth'
 import { redirectToPortal } from '@/lib/stripe'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, Loader2 } from 'lucide-react'
 import { PricingCard } from '@/components/billing/PricingCard'
 import { pricingPlans } from '@/config/pricing'
 
 export default function BillingSection() {
   const { subscriptionStatus } = useAuth()
+  const [portalLoading, setPortalLoading] = useState(false)
 
   const handlePortal = async () => {
+    setPortalLoading(true)
     try {
       await redirectToPortal()
     } catch (error) {
       console.error('Portal error:', error)
       alert('Failed to open portal. Please try again.')
+      setPortalLoading(false)
     }
   }
 
@@ -31,9 +35,18 @@ export default function BillingSection() {
             ? 'You have access to all premium features' 
             : 'Enjoying your trial period? You have access to all premium features'}
         </p>
-        <Button onClick={handlePortal}>
-          <CreditCard className="h-4 w-4 mr-2" />
-          Manage Subscription
+        <Button onClick={handlePortal} disabled={portalLoading}>
+          {portalLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            <>
+              <CreditCard className="h-4 w-4 mr-2" />
+              Manage Subscription
+            </>
+          )}
         </Button>
       </div>
     )

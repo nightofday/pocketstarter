@@ -1,10 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 import { useAuth } from '@/stores/auth'
 import { redirectToCheckout } from '@/lib/stripe'
 
@@ -34,6 +35,7 @@ export function PricingCard({
   compact = false
 }: PricingCardProps) {
   const { user, loading: authLoading } = useAuth()
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
 
   const handleCheckout = async () => {
     if (!user) {
@@ -42,6 +44,7 @@ export function PricingCard({
       return
     }
 
+    setCheckoutLoading(true)
     try {
       await redirectToCheckout({
         mode,
@@ -51,6 +54,7 @@ export function PricingCard({
     } catch (error) {
       console.error('Checkout failed:', error)
       alert('Checkout failed. Please try again.')
+      setCheckoutLoading(false)
     }
   }
 
@@ -128,11 +132,22 @@ export function PricingCard({
         ) : (
           <Button
             onClick={handleCheckout}
-            disabled={authLoading}
+            disabled={authLoading || checkoutLoading}
             className={`w-full ${compact ? 'text-sm py-2' : ''}`}
             variant={popular ? "default" : "outline"}
           >
-            {authLoading ? 'Loading...' : user ? cta : `Sign Up to ${cta}`}
+            {checkoutLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Loading...
+              </>
+            ) : authLoading ? (
+              'Loading...'
+            ) : user ? (
+              cta
+            ) : (
+              `Sign up to ${cta}`
+            )}
           </Button>
         )}
       </CardFooter>
