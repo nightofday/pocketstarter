@@ -13,8 +13,9 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     ignores: [
-      ".next/**/*", 
-      "node_modules/**/*"
+      "node_modules/**",
+      ".next/**",
+      "src/types/pocketbase-types.ts"
     ]
   }
 ];
