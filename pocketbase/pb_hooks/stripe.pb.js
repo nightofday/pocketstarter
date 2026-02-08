@@ -262,7 +262,6 @@ routerAdd("POST", "/api/stripe/checkout", (c) => {
         const baseUrl = $app.settings().meta.appURL;
         
         let body = `mode=${encodeURIComponent(mode)}`;
-        body += `&payment_method_types[]=card`;
         body += `&line_items[0][price]=${encodeURIComponent(priceId)}`;
         body += `&line_items[0][quantity]=1`;
         body += `&success_url=${encodeURIComponent(baseUrl + '/account/billing/success?session_id={CHECKOUT_SESSION_ID}')}`;
