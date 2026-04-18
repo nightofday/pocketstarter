@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "generate-types": "npx pocketbase-typegen --db ../pocketbase/pb_data/data.db --out ./src/types/pocketbase-types.ts"
+    "generate-types": "sh -c 'set -a && . ./.env.local && set +a && npx pocketbase-typegen --url \"$NEXT_PUBLIC_POCKETBASE_URL\" --email \"$POCKETBASE_ADMIN_EMAIL\" --password \"$POCKETBASE_ADMIN_PASSWORD\" --out ./src/types/pocketbase-types.ts'"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
